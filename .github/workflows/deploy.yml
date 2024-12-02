@@ -33,16 +33,17 @@ jobs:
           # Backend build and push
           echo "Building backend..."
           cd backend
+          ls -la  # 현재 디렉토리의 내용 확인
           chmod +x gradlew
           ./gradlew build -x test
-          docker build -t $DOCKER_USERNAME/backend:latest -f Dockerfile ./one_hada_infra
+          docker build -t $DOCKER_USERNAME/backend:latest -f Dockerfile .
           docker push $DOCKER_USERNAME/backend:latest
           
           # Frontend build and push
           echo "Building frontend..."
           cd ../frontend
-          ls -la  # Dockerfile 존재 확인
-          docker build -t $DOCKER_USERNAME/frontend:latest -f Dockerfile ./ONE-HADA_FE
+          ls -la  # 현재 디렉토리의 내용 확인
+          docker build -t $DOCKER_USERNAME/frontend:latest -f Dockerfile .
           docker push $DOCKER_USERNAME/frontend:latest
 
       - name: Deploy to EC2
