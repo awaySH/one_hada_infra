@@ -54,11 +54,7 @@ jobs:
           echo "Building frontend..."
           pwd
           ls -la
-          cd frontend
-          ls -la
-          cd ONE-HADA_FE
-          ls -la
-          cd one-hada
+          cd frontend/one-hada
           ls -la
           # Dockerfile이 현재 디렉토리에 있는지 확인
           if [ ! -f Dockerfile ]; then
