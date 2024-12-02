@@ -26,25 +26,24 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
-      - name: Debug - List directory structure
-        run: |
-          pwd
-          ls -la
-          ls -la backend
-          ls -la frontend
-
       - name: Build and push backend
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          pwd
-          ls -la
+          echo "Building backend..."
           cd backend
           ls -la
-          cd one_hada_infra
-          echo "Building backend..."
-          chmod +x gradlw
+          chmod +x gradlew
           ./gradlew build -x test
+          # Dockerfile이 현재 디렉토리에 있는지 확인
+          if [ ! -f Dockerfile ]; then
+            # Dockerfile 생성
+            echo "FROM openjdk:17-jdk" > Dockerfile
+            echo "WORKDIR /app" >> Dockerfile
+            echo "COPY build/libs/*.jar app.jar" >> Dockerfile
+            echo "EXPOSE 8080" >> Dockerfile
+            echo "ENTRYPOINT [\"java\", \"-jar\", \"app.jar\"]" >> Dockerfile
+          fi
           docker build -t $DOCKER_USERNAME/backend:latest .
           docker push $DOCKER_USERNAME/backend:latest
 
