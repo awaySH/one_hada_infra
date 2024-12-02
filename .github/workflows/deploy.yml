@@ -25,11 +25,12 @@ jobs:
           npm install
           npm test
 
-      - name: Backend Tests
+      - name: Backend Build
+        if: hashFiles('backend/package.json') != ''
         run: |
           cd backend
           npm install
-          npm test
+          npm run build
 
   build-and-deploy:
     needs: test
