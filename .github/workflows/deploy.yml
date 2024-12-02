@@ -35,14 +35,14 @@ jobs:
           cd backend
           chmod +x gradlew
           ./gradlew build -x test
-          docker build -t $DOCKER_USERNAME/backend:latest .
+          docker build -t $DOCKER_USERNAME/backend:latest -f Dockerfile ./one_hada_infra
           docker push $DOCKER_USERNAME/backend:latest
           
           # Frontend build and push
           echo "Building frontend..."
           cd ../frontend
           ls -la  # Dockerfile 존재 확인
-          docker build -t $DOCKER_USERNAME/frontend:latest -f Dockerfile .
+          docker build -t $DOCKER_USERNAME/frontend:latest -f Dockerfile ./ONE-HADA_FE
           docker push $DOCKER_USERNAME/frontend:latest
 
       - name: Deploy to EC2
