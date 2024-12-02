@@ -59,7 +59,7 @@ jobs:
           # Dockerfile이 현재 디렉토리에 있는지 확인
           if [ ! -f Dockerfile ]; then
             # Dockerfile 생성
-            echo "FROM node:16" > Dockerfile
+            echo "FROM node:18" > Dockerfile
             echo "WORKDIR /app" >> Dockerfile
             echo "COPY package*.json ./" >> Dockerfile
             echo "RUN npm install" >> Dockerfile
