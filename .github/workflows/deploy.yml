@@ -35,9 +35,7 @@ jobs:
           ls -la
           chmod +x gradlew
           ./gradlew build -x test
-          # Dockerfile이 현재 디렉토리에 있는지 확인
           if [ ! -f Dockerfile ]; then
-            # Dockerfile 생성
             echo "FROM openjdk:17-jdk" > Dockerfile
             echo "WORKDIR /app" >> Dockerfile
             echo "COPY build/libs/*.jar app.jar" >> Dockerfile
@@ -56,18 +54,17 @@ jobs:
           ls -la
           cd frontend/one-hada
           ls -la
-          # Dockerfile이 현재 디렉토리에 있는지 확인
           if [ ! -f Dockerfile ]; then
-            # Dockerfile 생성
-            echo "FROM node:18" > Dockerfile
+            echo "FROM node:18.17.0" > Dockerfile
             echo "WORKDIR /app" >> Dockerfile
             echo "COPY package*.json ./" >> Dockerfile
             echo "RUN npm install" >> Dockerfile
             echo "COPY . ." >> Dockerfile
+            echo "RUN npm run build" >> Dockerfile
             echo "EXPOSE 3000" >> Dockerfile
-            echo "CMD [\"npm\", \"start\"]" >> Dockerfile
+            echo "CMD [\"npm\", \"run\", \"start\"]" >> Dockerfile
           fi
-          docker build -t $DOCKER_USERNAME/frontend:latest .
+          docker build --no-cache -t $DOCKER_USERNAME/frontend:latest .
           docker push $DOCKER_USERNAME/frontend:latest
 
       - name: Deploy to EC2
@@ -79,7 +76,6 @@ jobs:
           script: |
             cd /home/ubuntu/app
             
-            # Create .env file with all necessary variables
             cat << EOF > .env
             DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
@@ -88,10 +84,7 @@ jobs:
             MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
             EOF
             
-            # Set proper permissions
             chmod 600 .env
-            
-            # Deploy
             docker-compose pull
             docker-compose down
             docker-compose up -d
