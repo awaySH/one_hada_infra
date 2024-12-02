@@ -32,18 +32,17 @@ jobs:
         run: |
           # Backend build and push
           echo "Building backend..."
-          cd backend
-          ls -la  # 현재 디렉토리의 내용 확인
+          cd backend/one_hada_infra
           chmod +x gradlew
           ./gradlew build -x test
-          docker build -t $DOCKER_USERNAME/backend:latest -f Dockerfile .
+          docker build -t $DOCKER_USERNAME/backend:latest .
           docker push $DOCKER_USERNAME/backend:latest
           
           # Frontend build and push
           echo "Building frontend..."
-          cd ../frontend
+          cd ../../frontend/ONE-HADA-FE/one-hada
           ls -la  # 현재 디렉토리의 내용 확인
-          docker build -t $DOCKER_USERNAME/frontend:latest -f Dockerfile .
+          docker build -t $DOCKER_USERNAME/frontend:latest .
           docker push $DOCKER_USERNAME/frontend:latest
 
       - name: Deploy to EC2
@@ -55,7 +54,7 @@ jobs:
           script: |
             cd /home/ubuntu/app
             
-            # Create .env file with all necessary variables
+            # 필요한 환경 변수로 .env 파일 생성
             cat << EOF > .env
             DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
@@ -64,10 +63,10 @@ jobs:
             MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
             EOF
             
-            # Set proper permissions
+            # 권한 설정
             chmod 600 .env
             
-            # Deploy
+            # 배포
             docker-compose pull
             docker-compose down
             docker-compose up -d
