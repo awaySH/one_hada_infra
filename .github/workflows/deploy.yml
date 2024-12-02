@@ -37,12 +37,15 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
+          pwd
+          ls -la
+          cd backend
+          ls -la
+          cd one_hada_infra
           echo "Building backend..."
-          cd backend/one_hada_infra
-          ls -la  # 현재 디렉토리 확인
-          chmod +x gradlew
+          chmod +x gradlw
           ./gradlew build -x test
-          docker build -t $DOCKER_USERNAME/backend:latest -f Dockerfile .
+          docker build -t $DOCKER_USERNAME/backend:latest .
           docker push $DOCKER_USERNAME/backend:latest
 
       - name: Build and push frontend
