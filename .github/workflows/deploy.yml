@@ -26,22 +26,32 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
-      - name: Build and push images
+      - name: Debug - List directory structure
+        run: |
+          pwd
+          ls -la
+          ls -la backend
+          ls -la frontend
+
+      - name: Build and push backend
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          # Backend build and push
           echo "Building backend..."
-          cd backend/one_hada_infra
+          cd backend
+          ls -la
           chmod +x gradlew
           ./gradlew build -x test
           docker build -t $DOCKER_USERNAME/backend:latest .
           docker push $DOCKER_USERNAME/backend:latest
-          
-          # Frontend build and push
+
+      - name: Build and push frontend
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: |
           echo "Building frontend..."
-          cd ../../frontend/ONE-HADA-FE/one-hada
-          ls -la  # 현재 디렉토리의 내용 확인
+          cd frontend
+          ls -la
           docker build -t $DOCKER_USERNAME/frontend:latest .
           docker push $DOCKER_USERNAME/frontend:latest
 
@@ -54,7 +64,7 @@ jobs:
           script: |
             cd /home/ubuntu/app
             
-            # 필요한 환경 변수로 .env 파일 생성
+            # Create .env file with all necessary variables
             cat << EOF > .env
             DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
@@ -63,10 +73,10 @@ jobs:
             MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
             EOF
             
-            # 권한 설정
+            # Set proper permissions
             chmod 600 .env
             
-            # 배포
+            # Deploy
             docker-compose pull
             docker-compose down
             docker-compose up -d
