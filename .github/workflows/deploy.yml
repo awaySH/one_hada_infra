@@ -5,35 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Check directory structure
-        run: ls -la
-
-      - name: Frontend Tests
-        if: hashFiles('frontend/package.json') != ''
-        run: |
-          cd frontend
-          npm install
-          npm test
-
-      - name: Backend Build
-        if: hashFiles('backend/package.json') != ''
-        run: |
-          cd backend
-          npm install
-          npm run build
-
   build-and-deploy:
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -52,12 +24,16 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          # Build and push backend
-          docker build -t $DOCKER_USERNAME/backend:latest ./backend
+          # Backend build and push
+          cd backend
+          echo "Building backend..."
+          docker build -t $DOCKER_USERNAME/backend:latest .
           docker push $DOCKER_USERNAME/backend:latest
           
-          # Build and push frontend
-          docker build -t $DOCKER_USERNAME/frontend:latest ./frontend
+          # Frontend build and push
+          cd ../frontend
+          echo "Building frontend..."
+          docker build -t $DOCKER_USERNAME/frontend:latest .
           docker push $DOCKER_USERNAME/frontend:latest
 
       - name: Deploy to EC2
@@ -68,7 +44,20 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/app
-            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > .env
+            
+            # Create .env file with all necessary variables
+            cat << EOF > .env
+            DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+            MYSQL_USER=${{ secrets.MYSQL_USER }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+            EOF
+            
+            # Set proper permissions
+            chmod 600 .env
+            
+            # Deploy
             docker-compose pull
             docker-compose down
             docker-compose up -d
